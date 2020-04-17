@@ -1,21 +1,25 @@
 const database = require("../setup/setup");
+const COLLECTIONS = require("../utility/constants");
 
-const getUserType = (req, res) => {
+const getUser = (req, res) => {
   if (req.method !== "GET") {
     res.status(400).send("Please send a GET request");
     return;
   }
 
-  let mobileNumber = req.query.mobileNumber,
-    user = undefined;
+  let usersRef = database.collection(COLLECTIONS.USERS);
 
-  database
-    .collection("users")
+  usersRef
+    .where(key, "==", userId)
     .get()
     .then((snapshot) => {
+      let mobileNumber = req.query.mobileNumber,
+        user = undefined;
+
       snapshot.forEach((doc) => {
         if (doc.data().mobileNumber == mobileNumber) {
           user = doc.data();
+          user.id = doc.id;
         }
       });
       if (user) {
@@ -52,12 +56,12 @@ const addNewUser = (req, res) => {
     },
   };
 
-  database
-    .collection("users")
-    .doc()
+  let doc = database.collection(COLLECTIONS.USERS).doc();
+
+  doc
     .set(newUser)
     .then(() => {
-      res.status(200).send(newUser);
+      res.status(200).send({ userId: doc.id });
       return;
     })
     .catch((err) => {
@@ -66,4 +70,4 @@ const addNewUser = (req, res) => {
     });
 };
 
-module.exports = { getUserType, addNewUser };
+module.exports = { getUser, addNewUser };

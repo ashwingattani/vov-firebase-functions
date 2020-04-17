@@ -1,5 +1,5 @@
 const functions = require("firebase-functions");
-const { getUserType, addNewUser } = require("./controllers/Login");
+const { getUser, addNewUser } = require("./controllers/Login");
 const getItemsList = require("./controllers/Items");
 
 exports.addUser = functions.https.onRequest((request, response) => {
@@ -7,7 +7,7 @@ exports.addUser = functions.https.onRequest((request, response) => {
 });
 
 exports.userType = functions.https.onRequest((req, res) => {
-  getUserType(req, res);
+  getUser(req, res);
 });
 
 exports.items = functions.https.onRequest((req, res) => {
