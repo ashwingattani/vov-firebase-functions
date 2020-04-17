@@ -1,5 +1,5 @@
 const database = require("../setup/setup");
-const COLLECTIONS = require("../utility/constants");
+const { COLLECTIONS } = require("../utility/constants");
 
 const getUser = (req, res) => {
   if (req.method !== "GET") {
@@ -10,23 +10,14 @@ const getUser = (req, res) => {
   let usersRef = database.collection(COLLECTIONS.USERS);
 
   usersRef
-    .where(key, "==", userId)
+    .where("mobileNumber", "==", req.query.mobileNumber)
     .get()
     .then((snapshot) => {
-      let mobileNumber = req.query.mobileNumber,
-        user = undefined;
-
-      snapshot.forEach((doc) => {
-        if (doc.data().mobileNumber == mobileNumber) {
-          user = doc.data();
-          user.id = doc.id;
-        }
-      });
-      if (user) {
-        res.status(200).send(user);
+      if (snapshot.empty) {
+        res.status(204).send("User Not Found");
         return;
       } else {
-        res.status(204).send("User Not Found");
+        res.status(200).send(snapshot.docs[0].data());
         return;
       }
     })
@@ -41,6 +32,22 @@ const addNewUser = (req, res) => {
     res.status(400).send("Please send a POST request");
     return;
   }
+
+  let usersRef = database.collection(COLLECTIONS.USERS);
+
+  usersRef
+    .where("mobileNumber", "==", req.body.mobileNumber)
+    .get()
+    .then((snapshot) => {
+      if (!snapshot.empty) {
+        res.status(400).send("User already exists, Please login to continue");
+        return;
+      }
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+      return;
+    });
 
   let newUser = {
     name: req.body.name,

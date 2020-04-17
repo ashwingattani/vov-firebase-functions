@@ -1,7 +1,7 @@
 const database = require("../setup/setup");
 
 const { COLLECTIONS, ORDER_STATUS } = require("../utility/constants");
-const { createItem } = require("./Items");
+const { createItemOrder, updateItemsForOrderId } = require("./ItemOrders");
 
 const createOrder = (req, res) => {
   if (req.method !== "POST") {
@@ -22,7 +22,7 @@ const createOrder = (req, res) => {
     .then(() => {
       req.body.items.forEach((item) => {
         item.orderId = doc.id;
-        createItem(item);
+        createItemOrder(item);
       });
       res.status(200).send({ orderId: doc.id });
       return;
@@ -62,4 +62,16 @@ const getOrderList = (req, res) => {
     });
 };
 
-module.exports = { createOrder, getOrderList };
+const updateOrder = (req, res) => {
+  if (req.method !== "UPDATE") {
+    res.status(400).send("Please send UPDATE request");
+  }
+
+  if (updateItemsForOrderId(req.body.orderId, req.body.items)) {
+    res.status(200).send("Order updated successfully");
+  } else {
+    res.status(400).send("Error updating order");
+  }
+};
+
+module.exports = { createOrder, getOrderList, updateOrder };

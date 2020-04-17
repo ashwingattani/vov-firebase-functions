@@ -1,5 +1,5 @@
 const database = require("../setup/setup");
-const COLLECTIONS = require("../utility/constants");
+const { COLLECTIONS } = require("../utility/constants");
 
 const getItemsList = (req, res) => {
   if (req.method !== "GET") {
@@ -28,14 +28,21 @@ const getItemsList = (req, res) => {
     });
 };
 
-const createItem = (item) => {
-  database
-    .collection(COLLECTIONS.ITEM_ORDERS)
-    .doc()
-    .set(item)
-    .then()
+const createItem = (req, res) => {
+  if (req.method !== "POST") {
+    res.status(400).send("Please send a GET request");
+    return;
+  }
+
+  let doc = database.collection(COLLECTIONS.ITEMS).doc();
+
+  doc
+    .set(req.body)
+    .then(() => {
+      res.status(200).send({ itemId: doc.id });
+    })
     .catch((err) => {
-      return err;
+      res.status(400).send(err);
     });
 };
 
