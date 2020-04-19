@@ -62,6 +62,68 @@ const getOrderList = (req, res) => {
     });
 };
 
+const currentOpenOrders = (req, res) => {
+  if (req.method !== "GET") {
+    res.status(400).send("Please send GET request");
+  }
+
+  let key = req.body.userType == "consumer" ? "customerId" : "sellerId";
+  let userId = req.body.userId;
+
+  let ordersRef = db.collection(COLLECTIONS.ORDERS);
+  ordersRef
+    .where(key, "==", userId)
+    .where("status", "==", ORDER_STATUS.OPEN)
+    .get()
+    .then((snapshot) => {
+      let orders = [];
+      if (snapshot.empty) {
+        res.status(204).send("No Orders Found");
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        orders.push({ ...doc.data, id: doc.id });
+      });
+      res.status(200).send(orders);
+      return;
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    });
+};
+
+const previousOrders = (req, res) => {
+  if (req.method !== "GET") {
+    res.status(400).send("Please send GET request");
+  }
+
+  let key = req.body.userType == "consumer" ? "customerId" : "sellerId";
+  let userId = req.body.userId;
+
+  let ordersRef = db.collection(COLLECTIONS.ORDERS);
+  ordersRef
+    .where(key, "==", userId)
+    .where("status", "in", [ORDER_STATUS.OPEN, ORDER_STATUS.FAILED])
+    .get()
+    .then((snapshot) => {
+      let orders = [];
+      if (snapshot.empty) {
+        res.status(204).send("No Orders Found");
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        orders.push({ ...doc.data, id: doc.id });
+      });
+      res.status(200).send(orders);
+      return;
+    })
+    .catch((err) => {
+      res.status(400).send(err);
+    });
+};
+
 const updateOrder = (req, res) => {
   if (req.method !== "UPDATE") {
     res.status(400).send("Please send UPDATE request");
@@ -74,4 +136,10 @@ const updateOrder = (req, res) => {
   }
 };
 
-module.exports = { createOrder, getOrderList, updateOrder };
+module.exports = {
+  createOrder,
+  getOrderList,
+  updateOrder,
+  currentOpenOrders,
+  previousOrders,
+};

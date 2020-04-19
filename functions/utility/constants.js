@@ -9,6 +9,7 @@ const ORDER_STATUS = {
   OPEN: "open",
   READY: "ready",
   DELIVERED: "delivered",
+  FAILED: "failed",
 };
 
 module.exports = { COLLECTIONS, ORDER_STATUS };

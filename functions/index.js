@@ -5,6 +5,8 @@ const {
   createOrder,
   getOrderList,
   updateOrder,
+  currentOpenOrders,
+  previousOrders,
 } = require("./controllers/Order");
 
 exports.addUser = functions.https.onRequest((request, response) => {
@@ -35,4 +37,12 @@ exports.orders = functions.https.onRequest((req, res) => {
 
 exports.updateOrder = functions.https.onRequest((req, res) => {
   updateOrder(req, res);
+});
+
+exports.currentOrders = functions.https.onRequest((req, res) => {
+  currentOpenOrders(req, res);
+});
+
+exports.orderHistory = functions.https.onRequest((req, res) => {
+  previousOrders(req, res);
 });
