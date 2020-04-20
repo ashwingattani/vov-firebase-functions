@@ -17,7 +17,9 @@ const getUser = (req, res) => {
         res.status(204).send("User Not Found");
         return;
       } else {
-        res.status(200).send(snapshot.docs[0].data());
+        let user = snapshot.docs[0].data();
+        user.id = snapshot.docs[0].id;
+        res.status(200).send(user);
         return;
       }
     })
@@ -62,7 +64,8 @@ const addNewUser = (req, res) => {
         doc
           .set(newUser)
           .then(() => {
-            res.status(200).send({ userId: doc.id });
+            newUser.id = doc.id;
+            res.status(200).send(newUser);
             return;
           })
           .catch((err) => {

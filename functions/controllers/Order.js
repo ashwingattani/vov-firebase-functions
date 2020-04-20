@@ -1,7 +1,11 @@
 const database = require("../setup/setup");
 
 const { COLLECTIONS, ORDER_STATUS } = require("../utility/constants");
-const { createItemOrder, updateItemsForOrderId } = require("./ItemOrders");
+const {
+  createItemOrder,
+  updateItemsForOrderId,
+  getItemsForOrderId,
+} = require("./ItemOrders");
 
 const createOrder = (req, res) => {
   if (req.method !== "POST") {
@@ -9,8 +13,8 @@ const createOrder = (req, res) => {
   }
 
   let order = {
-    customerId: req.body.customerId,
-    sellerId: req.body.sellerId,
+    customer: req.body.customer,
+    sellerId: "", //Id of seller based on pin code, to be set hardcode for as we have only one seller
     status: ORDER_STATUS.OPEN,
     date: new Date().toISOString()(),
   };
@@ -24,7 +28,7 @@ const createOrder = (req, res) => {
         item.orderId = doc.id;
         createItemOrder(item);
       });
-      res.status(200).send({ orderId: doc.id });
+      res.status(200).send({ ...order, id: doc.id });
       return;
     })
     .catch((err) => {
@@ -52,7 +56,12 @@ const getOrderList = (req, res) => {
       }
 
       snapshot.forEach((doc) => {
-        orders.push({ ...doc.data, id: doc.id });
+        let order = doc.data();
+        order.id = doc.id;
+        order.items = getItemsForOrderId(order.id)
+          ? getItemsForOrderId(order.id)
+          : [];
+        orders.push(order);
       });
       res.status(200).send(orders);
       return;
@@ -83,7 +92,12 @@ const currentOpenOrders = (req, res) => {
       }
 
       snapshot.forEach((doc) => {
-        orders.push({ ...doc.data, id: doc.id });
+        let order = doc.data();
+        order.id = doc.id;
+        order.items = getItemsForOrderId(order.id)
+          ? getItemsForOrderId(order.id)
+          : [];
+        orders.push(order);
       });
       res.status(200).send(orders);
       return;
@@ -114,7 +128,12 @@ const previousOrders = (req, res) => {
       }
 
       snapshot.forEach((doc) => {
-        orders.push({ ...doc.data, id: doc.id });
+        let order = doc.data();
+        order.id = doc.id;
+        order.items = getItemsForOrderId(order.id)
+          ? getItemsForOrderId(order.id)
+          : [];
+        orders.push(order);
       });
       res.status(200).send(orders);
       return;

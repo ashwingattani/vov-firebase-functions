@@ -37,4 +37,23 @@ const updateItemsForOrderId = (orderId, items) => {
     });
 };
 
-module.exports = { createItemOrder, updateItemsForOrderId };
+const getItemsForOrderId = (orderId) => {
+  let itemOrdersRef = database.collection(COLLECTIONS.ITEM_ORDERS);
+
+  itemOrdersRef
+    .where("orderId", "==", orderId)
+    .get()
+    .then((snapshot) => {
+      let items = [];
+      snapshot.forEach((doc) => {
+        items.push({ ...doc.data(), id: doc.id });
+      });
+      return items;
+    })
+    .catch((err) => {
+      console.log("getItemsForOrderId error", err);
+      return false;
+    });
+};
+
+module.exports = { createItemOrder, updateItemsForOrderId, getItemsForOrderId };
