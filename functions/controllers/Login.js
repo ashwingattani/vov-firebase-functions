@@ -45,20 +45,7 @@ const addNewUser = (req, res) => {
         res.status(400).send("User already exists, Please login to continue");
         return;
       } else {
-        let newUser = {
-          name: req.body.name,
-          mobileNumber: req.body.mobileNumber,
-          type: req.body.type,
-          houseNumber: req.body.houseNumber,
-          houseName: req.body.houseName,
-          street: req.body.street,
-          pincode: req.body.pincode,
-          location: {
-            _latitude: req.body.location.latitude,
-            _longitude: req.body.location.longitude,
-          },
-        };
-
+        let newUser = req.body;
         let doc = database.collection(COLLECTIONS.USERS).doc();
 
         doc
