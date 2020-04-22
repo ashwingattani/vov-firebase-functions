@@ -37,7 +37,7 @@ const updateItemsForOrderId = (orderId, items) => {
     });
 };
 
-const getItemsForOrderId = (orderId) => {
+const getItemsForOrderId = async (orderId) => {
   let itemOrdersRef = database.collection(COLLECTIONS.ITEM_ORDERS);
 
   itemOrdersRef
@@ -46,13 +46,14 @@ const getItemsForOrderId = (orderId) => {
     .then((snapshot) => {
       let items = [];
       snapshot.forEach((doc) => {
-        items.push({ ...doc.data(), id: doc.id });
+        let item = { ...doc.data(), id: doc.id };
+        items.push(item);
       });
       return items;
     })
     .catch((err) => {
       console.log("getItemsForOrderId error", err);
-      return false;
+      return [];
     });
 };
 

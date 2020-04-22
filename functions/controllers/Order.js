@@ -16,7 +16,7 @@ const createOrder = (req, res) => {
     customer: req.body.customer,
     sellerId: "Gg1TRCgVolq38IIT2gTh", //Id of Suresh Subziwala, later will add logic to assign seller based on pincode
     status: ORDER_STATUS.OPEN,
-    date: new Date().toISOString()(),
+    date: new Date().toISOString(),
   };
 
   let doc = database.collection(COLLECTIONS.ORDERS).doc();
@@ -41,10 +41,10 @@ const getOrderList = (req, res) => {
     res.status(400).send("Please send GET request");
   }
 
-  let key = req.body.userType == "consumer" ? "customerId" : "sellerId";
-  let userId = req.body.userId;
+  let key = req.query.userType == "consumer" ? "customer.id" : "sellerId";
+  let userId = req.query.userId;
 
-  let ordersRef = db.collection(COLLECTIONS.ORDERS);
+  let ordersRef = database.collection(COLLECTIONS.ORDERS);
   ordersRef
     .where(key, "==", userId)
     .get()
@@ -76,29 +76,39 @@ const currentOpenOrders = (req, res) => {
     res.status(400).send("Please send GET request");
   }
 
-  let key = req.body.userType == "consumer" ? "customerId" : "sellerId";
-  let userId = req.body.userId;
+  let key = req.query.userType == "consumer" ? "customer.id" : "sellerId";
+  let userId = req.query.userId;
 
-  let ordersRef = db.collection(COLLECTIONS.ORDERS);
+  console.log("key", key, "userId", userId);
+
+  let ordersRef = database.collection(COLLECTIONS.ORDERS);
   ordersRef
     .where(key, "==", userId)
     .where("status", "==", ORDER_STATUS.OPEN)
     .get()
-    .then((snapshot) => {
+    .then(async (snapshot) => {
       let orders = [];
       if (snapshot.empty) {
         res.status(204).send("No Orders Found");
         return;
       }
+      let docs = snapshot.docs;
+      docs.map(async (doc, index) => {
+        console.log("map", index);
 
-      snapshot.forEach((doc) => {
         let order = doc.data();
         order.id = doc.id;
-        order.items = getItemsForOrderId(order.id)
-          ? getItemsForOrderId(order.id)
-          : [];
+        let items = await getItemsForOrderId(order.id);
+        console.log("items", items);
+
+        order.items = items;
         orders.push(order);
       });
+      // snapshot.forEach(async (doc) => {
+
+      // });
+      console.log("orders", orders);
+
       res.status(200).send(orders);
       return;
     })
@@ -112,10 +122,10 @@ const previousOrders = (req, res) => {
     res.status(400).send("Please send GET request");
   }
 
-  let key = req.body.userType == "consumer" ? "customerId" : "sellerId";
-  let userId = req.body.userId;
+  let key = req.query.userType == "consumer" ? "customerId" : "sellerId";
+  let userId = req.query.userId;
 
-  let ordersRef = db.collection(COLLECTIONS.ORDERS);
+  let ordersRef = database.collection(COLLECTIONS.ORDERS);
   ordersRef
     .where(key, "==", userId)
     .where("status", "in", [ORDER_STATUS.OPEN, ORDER_STATUS.FAILED])
