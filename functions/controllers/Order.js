@@ -14,7 +14,7 @@ const createOrder = (req, res) => {
 
   let order = {
     customer: req.body.customer,
-    sellerId: "", //Id of seller based on pin code, to be set hardcode for as we have only one seller
+    sellerId: "Gg1TRCgVolq38IIT2gTh", //Id of Suresh Subziwala, later will add logic to assign seller based on pincode
     status: ORDER_STATUS.OPEN,
     date: new Date().toISOString()(),
   };
