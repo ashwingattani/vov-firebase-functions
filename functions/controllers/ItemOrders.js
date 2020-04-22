@@ -40,7 +40,7 @@ const updateItemsForOrderId = (orderId, items) => {
 const getItemsForOrderId = async (orderId) => {
   let itemOrdersRef = database.collection(COLLECTIONS.ITEM_ORDERS);
 
-  itemOrdersRef
+  return itemOrdersRef
     .where("orderId", "==", orderId)
     .get()
     .then((snapshot) => {
