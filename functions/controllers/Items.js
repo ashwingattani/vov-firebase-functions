@@ -22,10 +22,12 @@ const getItemsList = (req, res) => {
       } else {
         res.status(204).send("No Items Found");
       }
+      return;
     })
     .catch((err) => {
       console.log("error", err);
       res.status(400).send(err);
+      return;
     });
 };
 
@@ -41,10 +43,12 @@ const createItem = (req, res) => {
     .set(req.body)
     .then(() => {
       res.status(200).send({ itemId: doc.id });
+      return;
     })
     .catch((err) => {
       console.log("error", err);
       res.status(400).send(err);
+      return;
     });
 };
 

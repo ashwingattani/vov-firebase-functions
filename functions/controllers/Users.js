@@ -30,6 +30,24 @@ const getUser = (req, res) => {
     });
 };
 
+const getUserForId = (id) => {
+  database
+    .collection(COLLECTIONS.USERS)
+    .get()
+    .then((snapshot) => {
+      snapshot.forEach((doc) => {
+        if (doc.id == id) {
+          return doc.data();
+        }
+      });
+      return null;
+    })
+    .catch((err) => {
+      console.log("error", err);
+      return err;
+    });
+};
+
 const addNewUser = (req, res) => {
   if (req.method !== "POST") {
     res.status(400).send("Please send a POST request");
@@ -71,4 +89,53 @@ const addNewUser = (req, res) => {
     });
 };
 
-module.exports = { getUser, addNewUser };
+const getNearestSeller = async (pincode) => {
+  let user = undefined;
+  return database
+    .collection(COLLECTIONS.USERS)
+    .get()
+    .then((snapshot) => {
+      snapshot.forEach((doc) => {
+        console.log("inside users colletion");
+        if (doc.id == "Gg1TRCgVolq38IIT2gTh" && doc.data().isOnline) {
+          console.log("found user");
+          user = { ...doc.data(), id: doc.id };
+        }
+      });
+      return user;
+    })
+    .catch((err) => {
+      console.log("error", err);
+      return user;
+    });
+};
+
+const updateUser = (req, res) => {
+  if (req.method !== "POST") {
+    res.status(400).send("Please send POST request");
+    return;
+  }
+
+  let user = Object.assign({}, req.body);
+  delete user.id;
+
+  database
+    .collection(COLLECTIONS.USERS)
+    .doc(req.body.id)
+    .update(user)
+    .then(() => {
+      res.status(200).send("User updated successfully");
+    })
+    .catch((err) => {
+      console.log("error", err);
+      res.status(400).send(err);
+    });
+};
+
+module.exports = {
+  getUser,
+  addNewUser,
+  getUserForId,
+  getNearestSeller,
+  updateUser,
+};
