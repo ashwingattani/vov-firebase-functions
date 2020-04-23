@@ -1,4 +1,4 @@
-const database = require("../setup/setup");
+const { database } = require("../setup/setup");
 const { COLLECTIONS } = require("../utility/constants");
 
 const createItemOrder = (item) => {
@@ -8,6 +8,7 @@ const createItemOrder = (item) => {
     .set(item)
     .then()
     .catch((err) => {
+      console.log("error", err);
       return err;
     });
 };

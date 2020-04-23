@@ -1,4 +1,4 @@
-const database = require("../setup/setup");
+const { database } = require("../setup/setup");
 
 const getUserForId = (id) => {
   database
@@ -13,6 +13,7 @@ const getUserForId = (id) => {
       return null;
     })
     .catch((err) => {
+      console.log("error", err);
       return err;
     });
 };

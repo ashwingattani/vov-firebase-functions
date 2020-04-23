@@ -1,4 +1,4 @@
-const database = require("../setup/setup");
+const { database } = require("../setup/setup");
 const { COLLECTIONS } = require("../utility/constants");
 
 const getUser = (req, res) => {
@@ -24,6 +24,7 @@ const getUser = (req, res) => {
       }
     })
     .catch((err) => {
+      console.log("error", err);
       res.status(400).send(err);
       return;
     });
@@ -56,14 +57,14 @@ const addNewUser = (req, res) => {
             return;
           })
           .catch((err) => {
-            console.log("error in addition", err);
+            console.log("error while adding new user", err);
             res.status(400).send(err);
             return;
           });
       }
     })
     .catch((err) => {
-      console.log("error in save", err);
+      console.log("error while fetching users in addNewUser", err);
 
       res.status(400).send(err);
       return;

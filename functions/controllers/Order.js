@@ -1,4 +1,4 @@
-const database = require("../setup/setup");
+const { database } = require("../setup/setup");
 
 const { COLLECTIONS, ORDER_STATUS } = require("../utility/constants");
 const {
@@ -32,6 +32,7 @@ const createOrder = (req, res) => {
       return;
     })
     .catch((err) => {
+      console.log("error", err);
       res.status(400).send(err);
     });
 };
@@ -57,8 +58,6 @@ const currentOpenOrders = (req, res) => {
 
   let key = req.query.userType == "consumer" ? "customer.id" : "sellerId";
   let userId = req.query.userId;
-
-  console.log("key", key, "userId", userId);
 
   let currentRef = database.collection(COLLECTIONS.ORDERS);
   currentRef.where(key, "==", userId).where("status", "==", ORDER_STATUS.OPEN);

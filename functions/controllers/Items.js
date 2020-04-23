@@ -1,4 +1,4 @@
-const database = require("../setup/setup");
+const { database } = require("../setup/setup");
 const { COLLECTIONS } = require("../utility/constants");
 
 const getItemsList = (req, res) => {
@@ -24,6 +24,7 @@ const getItemsList = (req, res) => {
       }
     })
     .catch((err) => {
+      console.log("error", err);
       res.status(400).send(err);
     });
 };
@@ -42,6 +43,7 @@ const createItem = (req, res) => {
       res.status(200).send({ itemId: doc.id });
     })
     .catch((err) => {
+      console.log("error", err);
       res.status(400).send(err);
     });
 };

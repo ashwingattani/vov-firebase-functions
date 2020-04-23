@@ -10,4 +10,4 @@ admin.initializeApp({
 
 let database = admin.firestore();
 
-module.exports = database;
+module.exports = { database };

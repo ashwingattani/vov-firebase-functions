@@ -14,8 +14,6 @@ exports.addUser = functions.https.onRequest((request, response) => {
 });
 
 exports.userType = functions.https.onRequest((req, res) => {
-  console.log("user type");
-
   getUser(req, res);
 });
 
