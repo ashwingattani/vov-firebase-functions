@@ -130,7 +130,7 @@ const getOrdersFromRef = (ref, res) => {
     });
 };
 
-const updateOrder = (req, res) => {
+const udpateOrderStatus = (req, res) => {
   if (req.method !== "POST") {
     res.status(400).send("Please send POST request");
     return;
@@ -138,19 +138,14 @@ const updateOrder = (req, res) => {
 
   let order = Object.assign({}, req.body);
   delete order.items;
+  delete order.id;
 
   database
     .collection(COLLECTIONS.ORDERS)
-    .doc(order.id)
+    .doc(req.body.id)
     .update(order)
     .then(() => {
-      if (updateItemsForOrderId(order.id, req.body.items)) {
-        res.status(200).send("Order updated successfully");
-        return;
-      } else {
-        res.status(400).send("Error updating order");
-        return;
-      }
+      res.status(200).send("Order updated successfully");
     })
     .catch((err) => {
       console.log("error", err);
@@ -159,10 +154,26 @@ const updateOrder = (req, res) => {
     });
 };
 
+const updateOrderItems = (req, res) => {
+  if (req.method !== "POST") {
+    res.status(400).send("Please send POST request");
+    return;
+  }
+
+  if (updateItemsForOrderId(req.body.id, req.body.items)) {
+    res.status(200).send("Order updated successfully");
+    return;
+  } else {
+    res.status(400).send("Error updating order");
+    return;
+  }
+};
+
 module.exports = {
   createOrder,
   getOrderList,
-  updateOrder,
+  udpateOrderStatus,
+  updateOrderItems,
   currentOpenOrders,
   previousOrders,
 };

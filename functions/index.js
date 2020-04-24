@@ -4,7 +4,8 @@ const { getItemsList, createItem } = require("./controllers/Items");
 const {
   createOrder,
   getOrderList,
-  updateOrder,
+  udpateOrderStatus,
+  updateOrderItems,
   currentOpenOrders,
   previousOrders,
 } = require("./controllers/Orders");
@@ -37,8 +38,12 @@ exports.orders = functions.https.onRequest((req, res) => {
   getOrderList(req, res);
 });
 
-exports.updateOrder = functions.https.onRequest((req, res) => {
-  updateOrder(req, res);
+exports.updateOrderItems = functions.https.onRequest((req, res) => {
+  updateOrderItems(req, res);
+});
+
+exports.udpateOrderStatus = functions.https.onRequest((req, res) => {
+  udpateOrderStatus(req, res);
 });
 
 exports.currentOrders = functions.https.onRequest((req, res) => {
