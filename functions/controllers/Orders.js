@@ -37,6 +37,7 @@ const createOrder = (req, res) => {
             doc
               .set(order)
               .then(() => {
+                setTimerToCloseOrder(doc.id);
                 req.body.items.forEach((item) => {
                   item.orderId = doc.id;
                   createItemOrder(item);
@@ -195,6 +196,25 @@ const updateOrderItems = (req, res) => {
     return;
   }
 };
+
+function setTimerToCloseOrder(orderId) {
+  var now = new Date();
+  var millisTill3 =
+    new Date(now.getFullYear(), now.getMonth(), now.getDate(), 3, 0, 0, 0) -
+    now;
+  if (millisTill3 < 0) {
+    millisTill3 += 86400000; // it's after 3am, try 3am tomorrow.
+  }
+  setTimeout(function () {
+    let doc = database.collection(COLLECTIONS.ORDERS).doc(orderId);
+
+    doc.get().then((snapshot) => {
+      if (snapshot.data().status == ORDER_STATUS.OPEN) {
+        doc.update("status", ORDER_STATUS.CLOSED);
+      }
+    });
+  }, millisTill3);
+}
 
 module.exports = {
   createOrder,
