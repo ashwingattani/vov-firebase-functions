@@ -7,6 +7,7 @@ const COLLECTIONS = {
 
 const ORDER_STATUS = {
   OPEN: "open",
+  CLOSED: "closed",
   READY: "ready",
   DELIVERED: "delivered",
   FAILED: "failed",

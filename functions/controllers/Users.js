@@ -96,7 +96,6 @@ const getNearestSeller = async (pincode) => {
     .get()
     .then((snapshot) => {
       snapshot.forEach((doc) => {
-        console.log("inside users colletion");
         if (doc.id == "Gg1TRCgVolq38IIT2gTh" && doc.data().isOnline) {
           console.log("found user");
           user = { ...doc.data(), id: doc.id };

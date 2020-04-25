@@ -14,39 +14,62 @@ const createOrder = (req, res) => {
     return;
   }
 
-  console.log("calling getNearestSeller");
-  getNearestSeller()
-    .then((seller) => {
-      console.log("found seller", seller);
-      let order = {
-        customer: req.body.customer,
-        sellerId: seller.id, //Id of Suresh Subziwala, later will add logic to assign seller based on pincode
-        status: ORDER_STATUS.OPEN,
-        date: new Date().toISOString(),
-      };
+  // Check if an order is already OPEN
+  database
+    .collection(COLLECTIONS.ORDERS)
+    .where("status", "==", ORDER_STATUS.OPEN)
+    .where("customer.id", "==", req.body.customer.id)
+    .get()
+    .then((snapshot) => {
+      if (snapshot.empty) {
+        // Create new order as there are no open orders
+        getNearestSeller()
+          .then((seller) => {
+            let order = {
+              customer: req.body.customer,
+              sellerId: seller.id, //Id of Suresh Subziwala, later will add logic to assign seller based on pincode
+              status: ORDER_STATUS.OPEN,
+              date: new Date().toISOString(),
+            };
 
-      console.log("further process");
-      let doc = database.collection(COLLECTIONS.ORDERS).doc();
+            let doc = database.collection(COLLECTIONS.ORDERS).doc();
 
-      doc
-        .set(order)
-        .then(() => {
-          req.body.items.forEach((item) => {
-            item.orderId = doc.id;
-            createItemOrder(item);
+            doc
+              .set(order)
+              .then(() => {
+                req.body.items.forEach((item) => {
+                  item.orderId = doc.id;
+                  createItemOrder(item);
+                });
+                res.status(200).send({ ...order, id: doc.id });
+                return;
+              })
+              .catch((err) => {
+                console.log("error", err);
+                res.status(400).send(err);
+                return;
+              });
+          })
+          .catch((err) => {
+            console.log("error", err);
+            res.status(400).send("No Seller Available at this moment");
+            return;
           });
-          res.status(200).send({ ...order, id: doc.id });
-          return;
-        })
-        .catch((err) => {
-          console.log("error", err);
-          res.status(400).send(err);
-          return;
-        });
+      } else {
+        // Update the open order with new items
+        let openOrderDoc = snapshot.docs[0];
+        updateOrderItems(
+          {
+            method: req.method,
+            body: { id: openOrderDoc.id, items: req.body.items },
+          },
+          res
+        );
+      }
     })
     .catch((err) => {
-      console.log("error", err);
-      res.status(400).send("No Seller Available at this moment");
+      console.log("Fetching open orders failed", err);
+      res.status(400).send(err);
       return;
     });
 };
@@ -76,9 +99,10 @@ const currentOpenOrders = (req, res) => {
   let userId = req.query.userId;
 
   let currentRef = database.collection(COLLECTIONS.ORDERS);
-  currentRef.where(key, "==", userId).where("status", "==", ORDER_STATUS.OPEN);
+  let myCurrentRef = currentRef.where(key, "==", userId);
+  let openCurrentRef = myCurrentRef.where("status", "==", "open");
 
-  getOrdersFromRef(currentRef, res);
+  getOrdersFromRef(openCurrentRef, res);
 };
 
 const previousOrders = (req, res) => {
@@ -91,11 +115,14 @@ const previousOrders = (req, res) => {
   let userId = req.query.userId;
 
   let prevRef = database.collection(COLLECTIONS.ORDERS);
-  prevRef
-    .where(key, "==", userId)
-    .where("status", "in", [ORDER_STATUS.DELIVERED, ORDER_STATUS.FAILED]);
+  let myprevRef = prevRef.where("status", "in", [
+    ORDER_STATUS.CLOSED,
+    ORDER_STATUS.DELIVERED,
+    ORDER_STATUS.FAILED,
+  ]);
+  let closedPrevRef = myprevRef.where(key, "==", userId);
 
-  getOrdersFromRef(prevRef, res);
+  getOrdersFromRef(closedPrevRef, res);
 };
 
 const getOrdersFromRef = (ref, res) => {

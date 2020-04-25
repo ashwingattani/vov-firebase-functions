@@ -24,16 +24,19 @@ const updateItemsForOrderId = (orderId, items) => {
         return false;
       } else {
         snapshot.forEach((item) => {
-          let updatedItem = items.find($0.id === item.id);
-          database
-            .collection(COLLECTIONS.ITEM_ORDERS)
-            .doc(item.id)
-            .update(updatedItem);
+          let updatedItem = items.find((oldItem) => oldItem.id === item.id);
+          if (updatedItem) {
+            database
+              .collection(COLLECTIONS.ITEM_ORDERS)
+              .doc(item.id)
+              .update(updatedItem);
+          }
         });
         return true;
       }
     })
-    .catch(() => {
+    .catch((err) => {
+      console.log("error", err);
       return false;
     });
 };
