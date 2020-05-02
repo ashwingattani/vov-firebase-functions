@@ -1,19 +1,24 @@
 const { database } = require("../setup/setup");
 const { COLLECTIONS } = require("../utility/constants");
 
-const createItemOrder = (item) => {
+const createItemOrder = async (item) => {
   let doc = database.collection(COLLECTIONS.ITEM_ORDERS).doc();
 
-  doc
+  return doc
     .set(item)
-    .then()
+    .then(() => {
+      return true;
+    })
     .catch((err) => {
       console.log("error", err);
-      return err;
+      return false;
     });
 };
 
-const updateItemsForOrderId = (orderId, items) => {
+const updateItemsForOrderId = (req, res) => {
+  let items = req.body.items;
+  let orderId = req.body.id;
+
   let itemOrdersRef = database.collection(COLLECTIONS.ITEM_ORDERS);
 
   itemOrdersRef
@@ -21,23 +26,47 @@ const updateItemsForOrderId = (orderId, items) => {
     .get()
     .then((snapshot) => {
       if (snapshot.empty) {
-        return false;
+        items.map((item) => {
+          item.orderId = orderId;
+          createItemOrder(item);
+        });
+        res.status(200).send("Order updated successfully");
+        return;
       } else {
-        snapshot.forEach((item) => {
-          let updatedItem = items.find((oldItem) => oldItem.id === item.id);
-          if (updatedItem) {
-            database
+        let docs = snapshot.docs;
+
+        // check if there are common items in docs and items.
+        items.map(async (item, index) => {
+          item.orderId = orderId;
+          let availableItem = docs.find((doc) => {
+            return doc.data().id == item.id;
+          });
+
+          if (availableItem) {
+            await database
               .collection(COLLECTIONS.ITEM_ORDERS)
-              .doc(item.id)
-              .update(updatedItem);
+              .doc(availableItem.id)
+              .update(item)
+              .then()
+              .catch((err) => {
+                console.log(err);
+                res.status(400).send("Error updating order");
+                return;
+              });
+          } else {
+            await createItemOrder(item);
+          }
+          if (index == items.length - 1) {
+            res.status(200).send("Order updated successfully");
+            return;
           }
         });
-        return true;
       }
     })
     .catch((err) => {
       console.log("error", err);
-      return false;
+      res.status(400).send("Error updating order");
+      return;
     });
 };
 

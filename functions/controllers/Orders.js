@@ -38,12 +38,14 @@ const createOrder = (req, res) => {
               .set(order)
               .then(() => {
                 setTimerToCloseOrder(doc.id);
-                req.body.items.forEach((item) => {
+                req.body.items.map(async (item, index) => {
                   item.orderId = doc.id;
-                  createItemOrder(item);
+                  await createItemOrder(item);
+                  if (index == req.body.items.length - 1) {
+                    res.status(200).send({ ...order, id: doc.id });
+                    return;
+                  }
                 });
-                res.status(200).send({ ...order, id: doc.id });
-                return;
               })
               .catch((err) => {
                 console.log("error", err);
@@ -188,13 +190,7 @@ const updateOrderItems = (req, res) => {
     return;
   }
 
-  if (updateItemsForOrderId(req.body.id, req.body.items)) {
-    res.status(200).send("Order updated successfully");
-    return;
-  } else {
-    res.status(400).send("Error updating order");
-    return;
-  }
+  updateItemsForOrderId(req, res);
 };
 
 function setTimerToCloseOrder(orderId) {
